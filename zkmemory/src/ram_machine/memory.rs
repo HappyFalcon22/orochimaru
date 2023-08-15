@@ -262,6 +262,8 @@ where
             // Get the cell size in usize
             let cell_size = self.cell_size().to_bytes_be().len();
 
+            println!("Hello");
+
             // Slice 2 cells into low and high
             let mut chunk_low = Vec::from(&chunk[0..i]);
             let mut chunk_high = Vec::from(&chunk[i..cell_size]);
