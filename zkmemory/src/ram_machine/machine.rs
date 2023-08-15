@@ -18,6 +18,7 @@ pub enum CellInteraction<K, V> {
 pub trait RAMMachine<K, V> {
     fn new(word_size: u64) -> Self;
     fn write(&mut self, address: K, value: V);
+    fn read(&mut self, address: K);
 }
 
 #[derive(Debug)]
@@ -43,6 +44,17 @@ where
 
     fn write(&mut self, address: K, value: V) {
         match self.memory.write(address, value) {
+            CellInteraction::Cell(instruction) => self.trace.push(instruction),
+            CellInteraction::TwoCell(instruction1, instruction2) => {
+                self.trace.push(instruction1);
+                self.trace.push(instruction2);
+            }
+            _ => panic!("Invalid memory interaction"),
+        }
+    }
+
+    fn read(&mut self, address: K) {
+        match self.memory.read(address) {
             CellInteraction::Cell(instruction) => self.trace.push(instruction),
             CellInteraction::TwoCell(instruction1, instruction2) => {
                 self.trace.push(instruction1);
