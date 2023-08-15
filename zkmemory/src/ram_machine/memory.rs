@@ -58,7 +58,7 @@ impl From<u64> for Uint256 {
     fn from(value: u64) -> Self {
         Self {
             // Little-endian style
-            addr: U256::from_limbs([value, 0, 0, 0]),
+            addr: U256::from_limbs([0, 0, 0, value]),
         }
     }
 }
@@ -261,8 +261,6 @@ where
 
             // Get the cell size in usize
             let cell_size = self.cell_size().to_bytes_be().len();
-
-            println!("Hello");
 
             // Slice 2 cells into low and high
             let mut chunk_low = Vec::from(&chunk[0..i]);
