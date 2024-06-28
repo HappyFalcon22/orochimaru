@@ -1,9 +1,11 @@
+use colored::Colorize;
 use rbtree::RBTree;
-use std::{marker::PhantomData, println};
+use std::{marker::PhantomData, println, time::Instant};
 use zkmemory::{
     base::{Base, B256},
-    commitment::kzg::*,
+    commitment::kzg::KZGMemoryCommitment,
     config::{AllocatedSection, Config, ConfigArgs, DefaultConfig},
+    constraints::helper::build_and_test_circuit_with_time,
     error::Error,
     impl_register_machine, impl_stack_machine, impl_state_machine,
     machine::{
@@ -324,9 +326,13 @@ impl_stack_machine!(StateMachine);
 impl_state_machine!(StateMachine);
 
 fn main() {
+    println!(
+        "\n{}",
+        "__________MEMORY MANAGEMENT AND COMMITMENT MODULE__________\n".blue()
+    );
+
     // Define the desired machine configuration
     let mut machine = StateMachine::<B256, B256, 32, 32>::new(DefaultConfig::default_config());
-
     // Get the base address of the memory section
     let base = machine.base_address();
 
@@ -340,12 +346,34 @@ fn main() {
         Instruction::Push(B256::from(3735013596u64)),
     ];
 
+    println!("{}", "Input RAM program: ".yellow());
+
     // Execute the program
     for instruction in program {
         machine.exec(&instruction);
+        println!("{:?}", instruction);
     }
 
-    for trace in machine.trace() {
-        println!("{:?}", trace);
+    let trace = machine.trace();
+    let start = Instant::now();
+    let mut kzg_scheme = KZGMemoryCommitment::new(3);
+    let duration = start.elapsed();
+    println!("\n{}: {:?}", "KZG Setup Time".bright_red(), duration);
+
+    println!("\n{}", "Result log: ".green());
+
+    for record in machine.trace() {
+        let start = Instant::now();
+        let _c = kzg_scheme.commit(record);
+        let duration = start.elapsed();
+        println!("{:?}\nCommitted:{:?}", record, duration);
     }
+
+    println!("\n{}", "Verifying memory consistency...".bright_blue());
+    // If build_and_test_circuit does not panic, then the trace is valid.
+    build_and_test_circuit_with_time(trace, 10);
+    println!(
+        "{}",
+        "Memory consistency check done. The execution trace is valid.".bright_blue()
+    );
 }

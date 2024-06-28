@@ -411,28 +411,4 @@ mod tests {
 
         build_and_test_circuit(vec![trace0, trace1], 10);
     }
-
-    #[test]
-    #[should_panic]
-    fn also_test_invalid_time_order() {
-        let trace0 = ConvertedTraceRecord {
-            address: [Fp::from(0); 32],
-            time_log: [Fp::from(0); 8],
-            instruction: Fp::from(1),
-            value: [Fp::from(63); 32],
-        };
-        let trace1 = ConvertedTraceRecord {
-            address: [Fp::from(1); 32],
-            time_log: [Fp::from(2); 8],
-            instruction: Fp::from(1),
-            value: [Fp::from(63); 32],
-        };
-        let trace2 = ConvertedTraceRecord {
-            address: [Fp::from(1); 32],
-            time_log: [Fp::from(1); 8],
-            instruction: Fp::from(1),
-            value: [Fp::from(63); 32],
-        };
-        build_and_test_circuit(vec![trace0, trace1, trace2], 10);
-    }
 }

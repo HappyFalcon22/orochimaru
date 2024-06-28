@@ -4,7 +4,7 @@ use std::{marker::PhantomData, println};
 use zkmemory::{
     base::{Base, B256},
     config::{AllocatedSection, Config, ConfigArgs, DefaultConfig},
-    constraints::helper::build_and_test_circuit,
+    constraints::helper::build_and_test_circuit_with_time,
     error::Error,
     impl_register_machine, impl_stack_machine, impl_state_machine,
     machine::{
@@ -328,17 +328,13 @@ fn main() {
     // Define the desired machine configuration
     let mut machine = StateMachine::<B256, B256, 32, 32>::new(DefaultConfig::default_config());
 
-    // Show the section map
-    machine.show_sections_maps();
-
     // Get the base address of the memory section
     let base = machine.base_address();
-    println!("{}", base);
 
     let mut randomize = rand::thread_rng();
     randomize.gen_range(u64::MAX / 2..u64::MAX);
     // Define your desired program
-    let program = vec![
+    let program1 = vec![
         Instruction::Write(
             base + B256::from(16),
             B256::from(randomize.gen_range(u64::MAX / 2..u64::MAX)),
@@ -379,17 +375,16 @@ fn main() {
     ];
     let mut trace_record = vec![];
     // Execute the program
-    for instruction in program {
+    for instruction in program1 {
         machine.exec(&instruction);
     }
     // Print the trace record (prettified), sorted by ascending time by default
     for x in machine.trace().into_iter() {
-        println!("{:?}", x);
         trace_record.push(x);
     }
 
     println!("Verifying memory consistency...");
     // If build_and_test_circuit does not panic, then the trace is valid.
-    build_and_test_circuit(trace_record, 10);
+    build_and_test_circuit_with_time(trace_record, 10);
     println!("Memory consistency check done. The execution trace is valid.");
 }

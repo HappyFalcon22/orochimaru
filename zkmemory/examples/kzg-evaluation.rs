@@ -1,5 +1,5 @@
 use rbtree::RBTree;
-use std::{marker::PhantomData, println};
+use std::{marker::PhantomData, println, time::Instant};
 use zkmemory::{
     base::{Base, B256},
     commitment::kzg::*,
@@ -326,7 +326,6 @@ impl_state_machine!(StateMachine);
 fn main() {
     // Define the desired machine configuration
     let mut machine = StateMachine::<B256, B256, 32, 32>::new(DefaultConfig::default_config());
-
     // Get the base address of the memory section
     let base = machine.base_address();
 
@@ -336,7 +335,6 @@ fn main() {
         Instruction::Write(base + B256::from(48), B256::from(1111)),
         Instruction::Write(base + B256::from(80), B256::from(1000)),
         Instruction::Write(base + B256::from(112), B256::from(9999)),
-        Instruction::Read(base + B256::from(112)),
         Instruction::Push(B256::from(3735013596u64)),
     ];
 
@@ -345,7 +343,25 @@ fn main() {
         machine.exec(&instruction);
     }
 
-    for trace in machine.trace() {
-        println!("{:?}", trace);
-    }
+    let trace = machine.trace()[3];
+
+    let start = Instant::now();
+    let mut kzg_scheme = KZGMemoryCommitment::new(3);
+    let duration = start.elapsed();
+    println!("Initialization time: {:?}", duration);
+
+    let start = Instant::now();
+    let c = kzg_scheme.commit(trace);
+    let duration = start.elapsed();
+    println!("Time to commit a trace record: {:?}", duration);
+
+    let start = Instant::now();
+    let proof = kzg_scheme.prove_trace_record(trace, c);
+    let duration = start.elapsed();
+    println!("Prover time: {:?}", duration);
+
+    let start = Instant::now();
+    assert!(kzg_scheme.verify_trace_record(trace, c, proof));
+    let duration = start.elapsed();
+    println!("Verifier time: {:?}", duration);
 }

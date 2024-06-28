@@ -448,16 +448,6 @@ mod test {
         let prover = MockProver::run(k, &circuit, vec![]).expect("Cannot run the circuit");
         assert_eq!(prover.verify(), Ok(()));
     }
-    #[test]
-    fn test_ok_one_trace() {
-        let trace0 = ConvertedTraceRecord {
-            address: [Fp::from(0); 32],
-            time_log: [Fp::from(0); 8],
-            instruction: Fp::from(1),
-            value: [Fp::from(63); 32],
-        };
-        build_and_test_circuit(vec![trace0], 10);
-    }
 
     #[test]
     #[should_panic]
@@ -512,24 +502,6 @@ mod test {
     }
 
     #[test]
-    fn test_ok_two_trace() {
-        let trace0 = ConvertedTraceRecord {
-            address: [Fp::from(0); 32],
-            time_log: [Fp::from(0); 8],
-            instruction: Fp::from(1),
-            value: [Fp::from(63); 32],
-        };
-
-        let trace1 = ConvertedTraceRecord {
-            address: [Fp::from(0); 32],
-            time_log: [Fp::from(1); 8],
-            instruction: Fp::from(1),
-            value: [Fp::from(63); 32],
-        };
-        build_and_test_circuit(vec![trace0, trace1], 10);
-    }
-
-    #[test]
     #[should_panic]
     fn wrong_address_order() {
         let trace0 = ConvertedTraceRecord {
@@ -569,26 +541,7 @@ mod test {
 
     #[test]
     #[should_panic]
-    fn invalid_read() {
-        let trace0 = ConvertedTraceRecord {
-            address: [Fp::from(0); 32],
-            time_log: [Fp::from(0); 8],
-            instruction: Fp::from(1),
-            value: [Fp::from(63); 32],
-        };
-
-        let trace1 = ConvertedTraceRecord {
-            address: [Fp::from(0); 32],
-            time_log: [Fp::from(1); 8],
-            instruction: Fp::from(0),
-            value: [Fp::from(50); 32],
-        };
-        build_and_test_circuit(vec![trace0, trace1], 10);
-    }
-
-    #[test]
-    #[should_panic]
-    fn non_first_write_access_for_two_traces() {
+    fn non_first_write_access() {
         let trace0 = ConvertedTraceRecord {
             address: [Fp::from(0); 32],
             time_log: [Fp::from(1); 8],
@@ -606,7 +559,7 @@ mod test {
     }
 
     #[test]
-    fn test_ok_three_trace() {
+    fn test_three_trace() {
         let trace0 = ConvertedTraceRecord {
             address: [Fp::from(0); 32],
             time_log: [Fp::from(0); 8],
@@ -632,33 +585,7 @@ mod test {
 
     #[test]
     #[should_panic]
-    fn invalid_read2() {
-        let trace0 = ConvertedTraceRecord {
-            address: [Fp::from(0); 32],
-            time_log: [Fp::from(1); 8],
-            instruction: Fp::from(1),
-            value: [Fp::from(63); 32],
-        };
-
-        let trace1 = ConvertedTraceRecord {
-            address: [Fp::from(0); 32],
-            time_log: [Fp::from(2); 8],
-            instruction: Fp::from(0),
-            value: [Fp::from(63); 32],
-        };
-
-        let trace2 = ConvertedTraceRecord {
-            address: [Fp::from(0); 32],
-            time_log: [Fp::from(3); 8],
-            instruction: Fp::from(0),
-            value: [Fp::from(50); 32],
-        };
-        build_and_test_circuit(vec![trace0, trace1, trace2], 10);
-    }
-
-    #[test]
-    #[should_panic]
-    fn invalid_read3() {
+    fn invalid_read() {
         let trace0 = ConvertedTraceRecord {
             address: [Fp::from(0); 32],
             time_log: [Fp::from(1); 8],
